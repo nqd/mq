@@ -11,7 +11,9 @@ func TestSub(t *testing.T) {
 
 	m := NewMQ()
 
-	_, err := m.Subscribe("topic", func(t []byte) {
+	// todo: test err when cb is not fnc
+	// todo: test err when cb arg number is not 1
+	_, err := m.Subscribe("topic", func(t string) {
 		done <- true
 	})
 	if err != nil {
