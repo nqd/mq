@@ -11,12 +11,16 @@ func TestSub(t *testing.T) {
 
 	m := NewMQ()
 
-	err := m.Subscribe("topic", func(t []byte) {
-		m.Publish("topic", []byte("hello world"))
+	_, err := m.Subscribe("topic", func(t []byte) {
 		done <- true
 	})
 	if err != nil {
 		t.Fatal("Failed to subscribe: ", err)
+	}
+
+	err = m.Publish("topic", []byte("hello world"))
+	if err != nil {
+		t.Fatal("Failed to publish: ", err)
 	}
 
 	if err := Wait(done); err != nil {
