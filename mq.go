@@ -96,3 +96,7 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 
 	return sub, nil
 }
+
+func (s *Subscription) Unsubscribe() error {
+	return nil
+}

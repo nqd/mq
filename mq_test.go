@@ -23,7 +23,7 @@ func TestSubErr(t *testing.T) {
 		t.Fatal("Expect an error")
 	}
 }
-func TestSubS(t *testing.T) {
+func TestSub(t *testing.T) {
 	done := make(chan bool)
 
 	m := NewMQ()
@@ -100,6 +100,32 @@ func TestSubS(t *testing.T) {
 	err2 := Wait(done2)
 	if err1 != nil || err2 != nil {
 		t.Fatal("Did not get message")
+	}
+}
+
+func TestUnsub(t *testing.T) {
+	done := make(chan bool)
+
+	m := NewMQ()
+
+	// subscribe string
+	sub, err := m.Subscribe("topic", func(subMsg string) {
+		done <- true
+	})
+	if err != nil {
+		t.Fatal("Failed to subscribe: ", err)
+	}
+
+	if err = sub.Unsubscribe(); err != nil {
+		t.Fatal("Failed to unsubscribe: ", err)
+	}
+
+	if err := m.Publish("topic", "hello"); err != nil {
+		t.Fatal("Failed to publish: ", err)
+	}
+
+	if err1 := Wait(done); err1 == nil {
+		t.Fatal("Unsubscribe actually does not remove subscribe")
 	}
 }
 
