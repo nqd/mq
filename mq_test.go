@@ -23,22 +23,48 @@ func TestSubErr(t *testing.T) {
 		t.Fatal("Expect an error")
 	}
 }
-func TestSub(t *testing.T) {
+func TestSubS(t *testing.T) {
 	done := make(chan bool)
 
 	m := NewMQ()
 
-	// todo: test err when cb is not fnc
-	// todo: test err when cb arg number is not 1
-	_, err := m.Subscribe("topic", func(t string) {
+	// subscribe string
+	if _, err := m.Subscribe("topic", func(subMsg string) {
+		if subMsg != "hello world" {
+			t.Fatal("Received wrong message")
+		}
 		done <- true
-	})
-	if err != nil {
+	}); err != nil {
 		t.Fatal("Failed to subscribe: ", err)
 	}
 
-	err = m.Publish("topic", "hello world")
-	if err != nil {
+	if err := m.Publish("topic", "hello world"); err != nil {
+		t.Fatal("Failed to publish: ", err)
+	}
+
+	if err := Wait(done); err != nil {
+		t.Fatal("Did not get message")
+	}
+
+	// subscribe a struct
+	type msg struct {
+		x int
+		y string
+	}
+	pubMsg := msg{
+		x: 1,
+		y: "hello",
+	}
+	if _, err := m.Subscribe("topic2", func(subMsg msg) {
+		if subMsg.x != 1 || subMsg.y != "hello" {
+			t.Fatal("Received wrong message")
+		}
+		done <- true
+	}); err != nil {
+		t.Fatal("Failed to subscribe: ", err)
+	}
+
+	if err := m.Publish("topic2", pubMsg); err != nil {
 		t.Fatal("Failed to publish: ", err)
 	}
 
