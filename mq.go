@@ -8,7 +8,8 @@ import (
 
 // Err
 var (
-	ErrBadSubscription = errors.New("invalid subscription")
+	ErrBadSubscription   = errors.New("invalid subscription")
+	ErrBadUnsubscription = errors.New("invalid unsubscription")
 )
 
 // Handler is a specific callback used for Subscribe
@@ -25,7 +26,11 @@ type MQ struct {
 	emit      map[string]handlers // topic - handler cb
 }
 
-type Subscription struct{}
+type Subscription struct {
+	mq    *MQ
+	topic string
+	hdlr  Handler
+}
 
 // NewMQ return new structure of MQ
 func NewMQ() *MQ {
@@ -63,9 +68,6 @@ func (m *MQ) Publish(topic string, data interface{}) (err error) {
 // messages using the specified Handler. The Handler should be a func that matches
 // a signature from the description of Handler from above.
 func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
-	// fake return
-	sub := &Subscription{}
-
 	if cb == nil {
 		return nil, ErrBadSubscription
 	}
@@ -94,9 +96,40 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 		m.emit[topic] = append(m.emit[topic], handler)
 	}
 
+	// fake return
+	sub := &Subscription{
+		mq:    m,
+		topic: topic,
+		hdlr:  handler,
+	}
+
 	return sub, nil
 }
 
 func (s *Subscription) Unsubscribe() error {
+	topic := s.topic
+	hdlr := s.hdlr
+
+	s.mq.Lock()
+	defer s.mq.Unlock()
+
+	hdlrs, ok := s.mq.emit[topic]
+
+	if !ok {
+		return ErrBadUnsubscription
+	}
+
+	if len(hdlrs) == 1 {
+		delete(s.mq.emit, topic)
+		return nil
+	}
+
+	for i, v := range hdlrs {
+		if v == hdlr {
+			newHdlrs := append(hdlrs[:i], hdlrs[i+1:]...)
+			s.mq.emit[topic] = newHdlrs
+			break
+		}
+	}
 	return nil
 }
