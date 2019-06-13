@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+// Err
 var (
 	ErrBadSubscription = errors.New("invalid subscription")
 )

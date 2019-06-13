@@ -71,6 +71,36 @@ func TestSubS(t *testing.T) {
 	if err := Wait(done); err != nil {
 		t.Fatal("Did not get message")
 	}
+
+	// subscribe a number, 2 times
+	done1 := make(chan bool)
+	done2 := make(chan bool)
+	if _, err := m.Subscribe("topic3", func(subMsg int) {
+		if subMsg != 123 {
+			t.Fatal("Received wrong message")
+		}
+		done1 <- true
+	}); err != nil {
+		t.Fatal("Failed to subscribe: ", err)
+	}
+	if _, err := m.Subscribe("topic3", func(subMsg int) {
+		if subMsg != 123 {
+			t.Fatal("Received wrong message")
+		}
+		done2 <- true
+	}); err != nil {
+		t.Fatal("Failed to subscribe: ", err)
+	}
+
+	if err := m.Publish("topic3", 123); err != nil {
+		t.Fatal("Failed to publish: ", err)
+	}
+
+	err1 := Wait(done1)
+	err2 := Wait(done2)
+	if err1 != nil || err2 != nil {
+		t.Fatal("Did not get message")
+	}
 }
 
 func Wait(ch chan bool) (err error) {
