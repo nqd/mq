@@ -6,6 +6,23 @@ import (
 	"time"
 )
 
+func TestSubErr(t *testing.T) {
+	m := NewMQ()
+
+	// todo: test err when cb is not fnc
+	// todo: test err when cb arg number is not 1
+	if _, err := m.Subscribe("topic", nil); err == nil {
+		t.Fatal("Expect an error")
+	}
+
+	var s string
+	if _, err := m.Subscribe("topic", s); err == nil {
+		t.Fatal("Expect an error")
+	}
+	if _, err := m.Subscribe("topic", func(arg1 string, arg2 string) {}); err == nil {
+		t.Fatal("Expect an error")
+	}
+}
 func TestSub(t *testing.T) {
 	done := make(chan bool)
 

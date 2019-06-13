@@ -1,8 +1,13 @@
 package mq
 
 import (
+	"errors"
 	"reflect"
 	"sync"
+)
+
+var (
+	ErrBadSubscription = errors.New("invalid subscription")
 )
 
 // Handler is a specific callback used for Subscribe
@@ -56,13 +61,20 @@ func (m *MQ) Publish(topic string, data interface{}) (err error) {
 // Subscribe will create a subscription on the given subject and process incoming
 // messages using the specified Handler. The Handler should be a func that matches
 // a signature from the description of Handler from above.
-func (m *MQ) Subscribe(topic string, cb interface{}) (sub *Subscription, err error) {
+func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
+	// fake return
+	sub := &Subscription{}
+
+	if cb == nil {
+		return nil, ErrBadSubscription
+	}
+
 	cbType := reflect.TypeOf(cb)
 	if cbType.Kind() != reflect.Func {
-		panic("mq: Handler needs to be a function")
+		return nil, ErrBadSubscription
 	}
 	if cbType.NumIn() != 1 {
-		panic("mq: Handler needs to be a function with one arg")
+		return nil, ErrBadSubscription
 	}
 	cbValue := reflect.ValueOf(cb)
 
@@ -81,8 +93,5 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (sub *Subscription, err err
 		m.emit[topic] = append(m.emit[topic], handler)
 	}
 
-	// fake return
-	sub = &Subscription{}
-
-	return
+	return sub, nil
 }
