@@ -129,6 +129,21 @@ func TestUnsub(t *testing.T) {
 	}
 }
 
+func TestUnsubErr(t *testing.T) {
+	m := NewMQ()
+
+	sub, err := m.Subscribe("topic", func(subMsg string) {})
+	if err != nil {
+		t.Fatal("Failed to subscribe: ", err)
+	}
+	if err = sub.Unsubscribe(); err != nil {
+		t.Fatal("Failed to unsubscribe: ", err)
+	}
+	if err = sub.Unsubscribe(); err == nil {
+		t.Fatal("Cannot unsubscribe two times")
+	}
+}
+
 func Wait(ch chan bool) (err error) {
 	timeout := 1 * time.Second
 	select {

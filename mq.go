@@ -20,12 +20,13 @@ type Handler struct {
 
 type handlers []Handler
 
+// MQ is the structure that stores handler callback with interested topic
 type MQ struct {
 	sync.Mutex
-	idCounter int
-	emit      map[string]handlers // topic - handler cb
+	emit map[string]handlers // topic - handler cb
 }
 
+// A Subscription represents interest in a given subject.
 type Subscription struct {
 	mq    *MQ
 	topic string
@@ -64,9 +65,9 @@ func (m *MQ) Publish(topic string, data interface{}) (err error) {
 	return nil
 }
 
-// Subscribe will create a subscription on the given subject and process incoming
-// messages using the specified Handler. The Handler should be a func that matches
-// a signature from the description of Handler from above.
+// Subscribe will express interest in the given subject. The subject
+// can have wildcards (partial:*, full:#). Messages will be delivered
+// to the associated cb.
 func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 	if cb == nil {
 		return nil, ErrBadSubscription
@@ -88,7 +89,6 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 
 	m.Lock()
 	defer m.Unlock()
-	m.idCounter++
 
 	if m.emit[topic] == nil {
 		m.emit[topic] = handlers{handler}
@@ -96,7 +96,6 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 		m.emit[topic] = append(m.emit[topic], handler)
 	}
 
-	// fake return
 	sub := &Subscription{
 		mq:    m,
 		topic: topic,
@@ -106,6 +105,7 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 	return sub, nil
 }
 
+// Unsubscribe will remove interest in the given subject.
 func (s *Subscription) Unsubscribe() error {
 	topic := s.topic
 	hdlr := s.hdlr
