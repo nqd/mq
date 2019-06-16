@@ -14,11 +14,21 @@ type node struct {
 	children map[string]*node
 }
 
-func NewGlob() Glob {
+func NewTrieMatcher() Matcher {
 	return &trieMatcher{
 		root: &node{
 			subs:     make(map[Handler]struct{}),
 			children: make(map[string]*node),
 		},
 	}
+}
+
+func (t *trieMatcher) Add(topic string, hdl Handler) error {
+	return nil
+}
+func (t *trieMatcher) Remove(topic string, hdl Handler) error {
+	return nil
+}
+func (t *trieMatcher) Lookup(topic string) []Handler {
+	return nil
 }
