@@ -23,10 +23,10 @@ func NewTrieMatcher() Matcher {
 	}
 }
 
-func (t *trieMatcher) Add(topic string, hdl Handler) error {
-	return nil
+func (t *trieMatcher) Add(topic string, hdl Handler) (*Subscription, error) {
+	return nil, nill
 }
-func (t *trieMatcher) Remove(topic string, hdl Handler) error {
+func (t *trieMatcher) Remove(sub *Subscription) error {
 	return nil
 }
 func (t *trieMatcher) Lookup(topic string) []Handler {
