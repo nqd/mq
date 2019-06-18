@@ -1,3 +1,6 @@
+// a trie implementation of searching a handler with matching topic
+// much code is inspired from https://github.com/tylertreat/fast-topic-matching
+
 package matcher
 
 import (
@@ -48,6 +51,62 @@ func TestMatcher(t *testing.T) {
 	assertEqual(assert, []Handler{}, m.Lookup("trade.jpy"))
 	assertEqual(assert, []Handler{}, m.Lookup("forex.jpy"))
 	assertEqual(assert, []Handler{}, m.Lookup("trade"))
+}
+
+func TestRabbitMQBinding(t *testing.T) {
+	assert := assert.New(t)
+
+	var m = NewTrieMatcher()
+
+	var rabbitmqBinding = []struct {
+		topic   string
+		handler string
+	}{
+		{"a.b.c", "t1"},
+		{"a.*.c", "t2"},
+		{"a.#.b", "t3"},
+		{"a.b.b.c", "t4"},
+		{"#", "t5"},
+		{"#.#", "t6"},
+		{"#.b", "t7"},
+		{"*.*", "t8"},
+		{"a.*", "t9"},
+		{"*.b.c", "t10"},
+		{"a.#", "t11"},
+		{"a.#.#", "t12"},
+		{"b.b.c", "t13"},
+		{"a.b.b", "t14"},
+		{"a.b", "t15"},
+		{"b.c", "t16"},
+		{"", "t17"},
+		{"*.*.*", "t18"},
+		{"vodka.martini", "t19"},
+		{"a.b.c", "t20"},
+		{"*.#", "t21"},
+		{"#.*.#", "t22"},
+		{"*.#.#", "t23"},
+		{"#.#.#", "t24"},
+		{"*", "t25"},
+		{"#.b.#", "t26"},
+	}
+
+	var flagtests = []struct {
+		in  string
+		out []string
+	}{
+		{"a.b.c", []string{"t1", "t2", "t5", "t6", "t10", "t11", "t12", "t18", "t20", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.b", []string{"t3", "t5", "t6", "t7", "t8", "t9", "t11", "t12", "t15", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.b.b", []string{"t3", "t5", "t6", "t7", "t11", "t12", "t14", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		{"", []string{"t5", "t6", "t17", "t24"}},
+		{"b.c.c", []string{"t5", "t6", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.a.a.a.a", []string{"t5", "t6", "t11", "t12", "t21", "t22", "t23", "t24"}},
+		{"vodka.gin", []string{"t5", "t6", "t8", "t21", "t22", "t23", "t24"}},
+		{"vodka.martini", []string{"t5", "t6", "t8", "t19", "t21", "t22", "t23", "t24"}},
+		{"b.b.c", []string{"t5", "t6", "t10", "t13", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		{"nothing.here.at.all", []string{"t5", "t6", "t21", "t22", "t23", "t24"}},
+		{"oneword", []string{"t5", "t6", "t21", "t22", "t23", "t24", "t25"}},
+	}
+
 }
 
 func assertEqual(assert *assert.Assertions, expected, actual []Handler) {

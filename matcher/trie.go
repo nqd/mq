@@ -31,6 +31,7 @@ func (n *node) orphan() {
 	}
 }
 
+// NewTrieMatcher returns a default trie structure for matching
 func NewTrieMatcher() Matcher {
 	return &trieMatcher{
 		root: &node{
