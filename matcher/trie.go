@@ -1,6 +1,9 @@
 package matcher
 
-import "sync"
+import (
+	"strings"
+	"sync"
+)
 
 type trieMatcher struct {
 	sync.Mutex
@@ -24,8 +27,27 @@ func NewTrieMatcher() Matcher {
 }
 
 func (t *trieMatcher) Add(topic string, hdl Handler) (*Subscription, error) {
-	return nil, nil
+	t.Lock()
+	curr := t.root
+	for _, word := range strings.Split(topic, delimiter) {
+		child, ok := curr.children[word]
+		if !ok {
+			child = &node{
+				word:     word,
+				subs:     make(map[Handler]struct{}),
+				parent:   curr,
+				children: make(map[string]*node),
+			}
+			curr.children[word] = child
+		}
+		curr = child
+	}
+	curr.subs[hdl] = struct{}{}
+	t.Unlock()
+
+	return &Subscription{topic: topic, handler: hdl}, nil
 }
+
 func (t *trieMatcher) Remove(sub *Subscription) error {
 	return nil
 }

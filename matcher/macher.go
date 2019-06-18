@@ -12,7 +12,6 @@ type Handler interface{}
 
 // Subscription represents a topic subscription.
 type Subscription struct {
-	id      uint32
 	topic   string
 	handler Handler
 }
