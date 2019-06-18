@@ -1,3 +1,6 @@
+// a trie implementation of searching a handler with matching topic
+// much code is inspired from https://github.com/tylertreat/fast-topic-matching
+
 package matcher
 
 import (
@@ -15,6 +18,17 @@ type node struct {
 	subs     map[Handler]struct{}
 	parent   *node
 	children map[string]*node
+}
+
+func (n *node) orphan() {
+	if n.parent == nil {
+		// Root
+		return
+	}
+	delete(n.parent.children, n.word)
+	if len(n.parent.subs) == 0 && len(n.parent.children) == 0 {
+		n.parent.orphan()
+	}
 }
 
 func NewTrieMatcher() Matcher {
@@ -49,6 +63,23 @@ func (t *trieMatcher) Add(topic string, hdl Handler) (*Subscription, error) {
 }
 
 func (t *trieMatcher) Remove(sub *Subscription) error {
+	t.Lock()
+	curr := t.root
+	for _, word := range strings.Split(sub.topic, delimiter) {
+		child, ok := curr.children[word]
+		if !ok {
+			// Subscription doesn't exist.
+			t.Unlock()
+			return nil
+		}
+		curr = child
+	}
+	delete(curr.subs, sub.handler)
+	if len(curr.subs) == 0 && len(curr.children) == 0 {
+		curr.orphan()
+	}
+	t.Unlock()
+
 	return nil
 }
 
