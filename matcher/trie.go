@@ -51,6 +51,36 @@ func (t *trieMatcher) Add(topic string, hdl Handler) (*Subscription, error) {
 func (t *trieMatcher) Remove(sub *Subscription) error {
 	return nil
 }
+
 func (t *trieMatcher) Lookup(topic string) []Handler {
-	return nil
+	t.Lock()
+	var (
+		subMap = t.lookup(strings.Split(topic, delimiter), t.root)
+		subs   = make([]Handler, len(subMap))
+		i      = 0
+	)
+	t.Unlock()
+	for sub := range subMap {
+		subs[i] = sub
+		i++
+	}
+	return subs
+}
+
+func (t *trieMatcher) lookup(words []string, node *node) map[Handler]struct{} {
+	if len(words) == 0 {
+		return node.subs
+	}
+	subs := make(map[Handler]struct{})
+	if n, ok := node.children[words[0]]; ok {
+		for k, v := range t.lookup(words[1:], n) {
+			subs[k] = v
+		}
+	}
+	if n, ok := node.children[wcOne]; ok {
+		for k, v := range t.lookup(words[1:], n) {
+			subs[k] = v
+		}
+	}
+	return subs
 }
