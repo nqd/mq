@@ -56,9 +56,9 @@ func TestMatcher(t *testing.T) {
 func TestRabbitMQBinding(t *testing.T) {
 	assert := assert.New(t)
 
-	var m = NewTrieMatcher()
+	m := NewTrieMatcher()
 
-	var rabbitmqBinding = []struct {
+	rabbitmqBinding := []struct {
 		topic   string
 		handler string
 	}{
@@ -90,23 +90,30 @@ func TestRabbitMQBinding(t *testing.T) {
 		{"#.b.#", "t26"},
 	}
 
-	var flagtests = []struct {
-		in  string
-		out []string
-	}{
-		{"a.b.c", []string{"t1", "t2", "t5", "t6", "t10", "t11", "t12", "t18", "t20", "t21", "t22", "t23", "t24", "t26"}},
-		{"a.b", []string{"t3", "t5", "t6", "t7", "t8", "t9", "t11", "t12", "t15", "t21", "t22", "t23", "t24", "t26"}},
-		{"a.b.b", []string{"t3", "t5", "t6", "t7", "t11", "t12", "t14", "t18", "t21", "t22", "t23", "t24", "t26"}},
-		{"", []string{"t5", "t6", "t17", "t24"}},
-		{"b.c.c", []string{"t5", "t6", "t18", "t21", "t22", "t23", "t24", "t26"}},
-		{"a.a.a.a.a", []string{"t5", "t6", "t11", "t12", "t21", "t22", "t23", "t24"}},
-		{"vodka.gin", []string{"t5", "t6", "t8", "t21", "t22", "t23", "t24"}},
-		{"vodka.martini", []string{"t5", "t6", "t8", "t19", "t21", "t22", "t23", "t24"}},
-		{"b.b.c", []string{"t5", "t6", "t10", "t13", "t18", "t21", "t22", "t23", "t24", "t26"}},
-		{"nothing.here.at.all", []string{"t5", "t6", "t21", "t22", "t23", "t24"}},
-		{"oneword", []string{"t5", "t6", "t21", "t22", "t23", "t24", "t25"}},
+	for _, tt := range rabbitmqBinding {
+		_, err := m.Add(tt.topic, tt.handler)
+		assert.NoError(err)
 	}
 
+	matchings := []struct {
+		in  string
+		out []Handler
+	}{
+		{"a.b.c", []Handler{"t1", "t2", "t5", "t6", "t10", "t11", "t12", "t18", "t20", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.b", []Handler{"t3", "t5", "t6", "t7", "t8", "t9", "t11", "t12", "t15", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.b.b", []Handler{"t3", "t5", "t6", "t7", "t11", "t12", "t14", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		{"", []Handler{"t5", "t6", "t17", "t24"}},
+		{"b.c.c", []Handler{"t5", "t6", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.a.a.a.a", []Handler{"t5", "t6", "t11", "t12", "t21", "t22", "t23", "t24"}},
+		{"vodka.gin", []Handler{"t5", "t6", "t8", "t21", "t22", "t23", "t24"}},
+		{"vodka.martini", []Handler{"t5", "t6", "t8", "t19", "t21", "t22", "t23", "t24"}},
+		{"b.b.c", []Handler{"t5", "t6", "t10", "t13", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		{"nothing.here.at.all", []Handler{"t5", "t6", "t21", "t22", "t23", "t24"}},
+		{"oneword", []Handler{"t5", "t6", "t21", "t22", "t23", "t24", "t25"}},
+	}
+	for _, tt := range matchings {
+		assertEqual(assert, tt.out, m.Lookup(tt.in))
+	}
 }
 
 func assertEqual(assert *assert.Assertions, expected, actual []Handler) {
