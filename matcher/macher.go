@@ -1,4 +1,4 @@
-package goglob
+package matcher
 
 const (
 	delimiter = "."

@@ -1,4 +1,4 @@
-package goglob
+package matcher
 
 import "sync"
 
@@ -24,7 +24,7 @@ func NewTrieMatcher() Matcher {
 }
 
 func (t *trieMatcher) Add(topic string, hdl Handler) (*Subscription, error) {
-	return nil, nill
+	return nil, nil
 }
 func (t *trieMatcher) Remove(sub *Subscription) error {
 	return nil
