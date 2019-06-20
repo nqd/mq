@@ -53,8 +53,14 @@ func (t *trieMatcher) Add(topic string, hdl Handler) (*Subscription, error) {
 				parent:   curr,
 				children: make(map[string]*node),
 			}
+			// with wildcast some, the child is children itself
+			if word == wcSome {
+				child.children[word] = child
+			}
+
 			curr.children[word] = child
 		}
+
 		curr = child
 	}
 	curr.subs[hdl] = struct{}{}
@@ -112,6 +118,21 @@ func (t *trieMatcher) lookup(words []string, node *node) map[Handler]struct{} {
 	if n, ok := node.children[wcOne]; ok {
 		for k, v := range t.lookup(words[1:], n) {
 			subs[k] = v
+		}
+	}
+	if n, ok := node.children[wcSome]; ok {
+		// check the child of child with words[0]
+		// if yes, skip child, use grandchild
+		nn, ok := n.children[words[0]]
+		if ok {
+			for k, v := range t.lookup(words[1:], nn) {
+				subs[k] = v
+			}
+		} else {
+			// else, use grandchild
+			for k, v := range t.lookup(words[1:], n) {
+				subs[k] = v
+			}
 		}
 	}
 	return subs
