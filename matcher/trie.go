@@ -107,8 +107,20 @@ func (t *trieMatcher) Lookup(topic string) []Handler {
 
 func (t *trieMatcher) lookup(words []string, node *node) map[Handler]struct{} {
 	if len(words) == 0 {
-		return node.subs
+		hlds := node.subs
+
+		// match("#.b.#", "a.b") == true
+		if child, ok := node.children[wcSome]; ok {
+			// if the child has only a child itself
+			if len(child.children) == 1 {
+				for k, v := range child.subs {
+					hlds[k] = v
+				}
+			}
+		}
+		return hlds
 	}
+
 	subs := make(map[Handler]struct{})
 	if n, ok := node.children[words[0]]; ok {
 		for k, v := range t.lookup(words[1:], n) {
@@ -123,6 +135,7 @@ func (t *trieMatcher) lookup(words []string, node *node) map[Handler]struct{} {
 	if n, ok := node.children[wcSome]; ok {
 		// check the child of child with words[0]
 		// if yes, looking to use grandchild, wcSome count = 0
+		// match("a.#.b", "a.b") == true
 		nn, ok := n.children[words[0]]
 		if ok {
 			for k, v := range t.lookup(words[1:], nn) {
