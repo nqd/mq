@@ -14,10 +14,13 @@ func TestMatcher(t *testing.T) {
 	var (
 		m = NewTrieMatcher()
 	)
+	m.Add("*.#", "t21")
 	m.Add("#.*.#", "t22")
-	m.Add("#.one.#", "t26")
+	m.Add("*.#.#", "t23")
+	m.Add("#.#.#", "t24")
+	m.Add("*", "t25")
 
-	assertEqual(assert, []Handler{"t22"}, m.Lookup("oneword"))
+	assertEqual(assert, []Handler{"t24"}, m.Lookup(""))
 }
 
 func TestRabbitMQBinding(t *testing.T) {
@@ -69,7 +72,7 @@ func TestRabbitMQBinding(t *testing.T) {
 		{"a.b.c", []Handler{"t1", "t2", "t5", "t6", "t10", "t11", "t12", "t18", "t20", "t21", "t22", "t23", "t24", "t26"}},
 		{"a.b", []Handler{"t3", "t5", "t6", "t7", "t8", "t9", "t11", "t12", "t15", "t21", "t22", "t23", "t24", "t26"}},
 		{"a.b.b", []Handler{"t3", "t5", "t6", "t7", "t11", "t12", "t14", "t18", "t21", "t22", "t23", "t24", "t26"}},
-		// empty string, todo {"", []Handler{"t5", "t6", "t17", "t24"}},
+		{"", []Handler{"t5", "t6", "t17", "t24"}},
 		{"b.c.c", []Handler{"t5", "t6", "t18", "t21", "t22", "t23", "t24", "t26"}},
 		{"a.a.a.a.a", []Handler{"t5", "t6", "t11", "t12", "t21", "t22", "t23", "t24"}},
 		{"vodka.gin", []Handler{"t5", "t6", "t8", "t21", "t22", "t23", "t24"}},
