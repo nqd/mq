@@ -9,21 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMatcher(t *testing.T) {
-	assert := assert.New(t)
-	var (
-		m = NewTrieMatcher()
-	)
-	m.Add("*.#", "t21")
-	m.Add("#.*.#", "t22")
-	m.Add("*.#.#", "t23")
-	m.Add("#.#.#", "t24")
-	m.Add("*", "t25")
-
-	assertEqual(assert, []Handler{"t24"}, m.Lookup(""))
-}
-
-func TestRabbitMQBinding(t *testing.T) {
+func TestRabbitMQLookup(t *testing.T) {
 	assert := assert.New(t)
 
 	m := NewTrieMatcher()
@@ -80,6 +66,75 @@ func TestRabbitMQBinding(t *testing.T) {
 		{"b.b.c", []Handler{"t5", "t6", "t10", "t13", "t18", "t21", "t22", "t23", "t24", "t26"}},
 		{"nothing.here.at.all", []Handler{"t5", "t6", "t21", "t22", "t23", "t24"}},
 		{"oneword", []Handler{"t5", "t6", "t21", "t22", "t23", "t24", "t25"}},
+	}
+	for _, tt := range matchings {
+		assertEqual(assert, tt.out, m.Lookup(tt.in))
+	}
+}
+
+func TestRabbitMQRemove(t *testing.T) {
+	assert := assert.New(t)
+
+	m := NewTrieMatcher()
+
+	rabbitmqBinding := []struct {
+		topic   string
+		handler string
+	}{
+		{"a.b.c", "t1"},
+		{"a.*.c", "t2"},
+		{"a.#.b", "t3"},
+		{"a.b.b.c", "t4"},
+		{"#", "t5"},
+		{"#.#", "t6"},
+		{"#.b", "t7"},
+		{"*.*", "t8"},
+		{"a.*", "t9"},
+		{"*.b.c", "t10"},
+		{"a.#", "t11"},
+		{"a.#.#", "t12"},
+		{"b.b.c", "t13"},
+		{"a.b.b", "t14"},
+		{"a.b", "t15"},
+		{"b.c", "t16"},
+		{"", "t17"},
+		{"*.*.*", "t18"},
+		{"vodka.martini", "t19"},
+		{"a.b.c", "t20"},
+		{"*.#", "t21"},
+		{"#.*.#", "t22"},
+		{"*.#.#", "t23"},
+		{"#.#.#", "t24"},
+		{"*", "t25"},
+		{"#.b.#", "t26"},
+	}
+
+	for _, tt := range rabbitmqBinding {
+		// todo: save subscription
+		_, err := m.Add(tt.topic, tt.handler)
+		assert.NoError(err)
+	}
+
+	rabbitmqBindingToRemove := []int{1, 5, 11, 19, 21}
+	for _, v := range rabbitmqBindingToRemove {
+		m.Remove() // remove subscription
+	}
+
+	matchings := []struct {
+		in  string
+		out []Handler
+	}{
+		{"a.b.c", []Handler{"t2", "t6", "t10", "t12", "t18", "t20", "t22", "t23", "t24", "t26"}},
+		{"a.b", []Handler{"t3", "t6", "t7", "t8", "t9", "t12", "t15", "t22", "t23", "t24", "t26"}},
+		{"a.b.b", []Handler{"t3", "t6", "t7", "t12", "t14", "t18", "t22", "t23", "t24", "t26"}},
+		{"", []Handler{"t6", "t17", "t24"}},
+		{"b.c.c", []Handler{"t6", "t18", "t22", "t23", "t24", "t26"}},
+		{"a.a.a.a.a", []Handler{"t6", "t12", "t22", "t23", "t24"}},
+		{"vodka.gin", []Handler{"t6", "t8", "t22", "t23", "t24"}},
+		{"vodka.martini", []Handler{"t6", "t8", "t22", "t23", "t24"}},
+		{"b.b.c", []Handler{"t6", "t10", "t13", "t18", "t22", "t23", "t24", "t26"}},
+		{"nothing.here.at.all", []Handler{"t6", "t22", "t23", "t24"}},
+		{"oneword", []Handler{"t6", "t22", "t23", "t24", "t25"}},
 	}
 	for _, tt := range matchings {
 		assertEqual(assert, tt.out, m.Lookup(tt.in))
