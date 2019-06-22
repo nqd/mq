@@ -136,12 +136,18 @@ func (t *trieMatcher) lookup(words []string, node *node) map[Handler]struct{} {
 		// check the child of child with words[0]
 		// if yes, looking to use grandchild, wcSome count = 0
 		// match("a.#.b", "a.b") == true
-		nn, ok := n.children[words[0]]
-		if ok {
+		if nn, ok := n.children[words[0]]; ok {
 			for k, v := range t.lookup(words[1:], nn) {
 				subs[k] = v
 			}
 		}
+		// match("a.#.*", "a.b") == true
+		if nn, ok := n.children[wcOne]; ok {
+			for k, v := range t.lookup(words[1:], nn) {
+				subs[k] = v
+			}
+		}
+
 		// always use child
 		for k, v := range t.lookup(words[1:], n) {
 			subs[k] = v

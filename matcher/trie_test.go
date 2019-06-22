@@ -14,18 +14,10 @@ func TestMatcher(t *testing.T) {
 	var (
 		m = NewTrieMatcher()
 	)
-	m.Add("a.b.c", "t1")
-	m.Add("a.*.c", "t2")
-	m.Add("a.#.b", "t3")
-	m.Add("a.b.b.c", "t4")
-	m.Add("#", "t5")
-	m.Add("#.#", "t6")
-	m.Add("#.b", "t7")
 	m.Add("#.*.#", "t22")
-	m.Add("#.b.#", "t26")
+	m.Add("#.one.#", "t26")
 
-	assertEqual(assert, []Handler{"t3", "t5", "t6", "t7", "t22", "t26"}, m.Lookup("a.b"))
-	// {"a.b", []Handler{"t3", "t5", "t6", "t7", "t8", "t9", "t11", "t12", "t15", "t21", "t22", "t23", "t24", "t26"}},
+	assertEqual(assert, []Handler{"t22"}, m.Lookup("oneword"))
 }
 
 func TestRabbitMQBinding(t *testing.T) {
@@ -74,17 +66,17 @@ func TestRabbitMQBinding(t *testing.T) {
 		in  string
 		out []Handler
 	}{
-		// {"a.b.c", []Handler{"t1", "t2", "t5", "t6", "t10", "t11", "t12", "t18", "t20", "t21", "t22", "t23", "t24", "t26"}},
-		// {"a.b", []Handler{"t3", "t5", "t6", "t7", "t8", "t9", "t11", "t12", "t15", "t21", "t22", "t23", "t24", "t26"}},
-		// {"a.b.b", []Handler{"t3", "t5", "t6", "t7", "t11", "t12", "t14", "t18", "t21", "t22", "t23", "t24", "t26"}},
-		{"", []Handler{"t5", "t6", "t17", "t24"}},
-		// {"b.c.c", []Handler{"t5", "t6", "t18", "t21", "t22", "t23", "t24", "t26"}},
-		// {"a.a.a.a.a", []Handler{"t5", "t6", "t11", "t12", "t21", "t22", "t23", "t24"}},
-		// {"vodka.gin", []Handler{"t5", "t6", "t8", "t21", "t22", "t23", "t24"}},
-		// {"vodka.martini", []Handler{"t5", "t6", "t8", "t19", "t21", "t22", "t23", "t24"}},
-		// {"b.b.c", []Handler{"t5", "t6", "t10", "t13", "t18", "t21", "t22", "t23", "t24", "t26"}},
-		// {"nothing.here.at.all", []Handler{"t5", "t6", "t21", "t22", "t23", "t24"}},
-		// {"oneword", []Handler{"t5", "t6", "t21", "t22", "t23", "t24", "t25"}},
+		{"a.b.c", []Handler{"t1", "t2", "t5", "t6", "t10", "t11", "t12", "t18", "t20", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.b", []Handler{"t3", "t5", "t6", "t7", "t8", "t9", "t11", "t12", "t15", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.b.b", []Handler{"t3", "t5", "t6", "t7", "t11", "t12", "t14", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		// empty string, todo {"", []Handler{"t5", "t6", "t17", "t24"}},
+		{"b.c.c", []Handler{"t5", "t6", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		{"a.a.a.a.a", []Handler{"t5", "t6", "t11", "t12", "t21", "t22", "t23", "t24"}},
+		{"vodka.gin", []Handler{"t5", "t6", "t8", "t21", "t22", "t23", "t24"}},
+		{"vodka.martini", []Handler{"t5", "t6", "t8", "t19", "t21", "t22", "t23", "t24"}},
+		{"b.b.c", []Handler{"t5", "t6", "t10", "t13", "t18", "t21", "t22", "t23", "t24", "t26"}},
+		{"nothing.here.at.all", []Handler{"t5", "t6", "t21", "t22", "t23", "t24"}},
+		{"oneword", []Handler{"t5", "t6", "t21", "t22", "t23", "t24", "t25"}},
 	}
 	for _, tt := range matchings {
 		assertEqual(assert, tt.out, m.Lookup(tt.in))
