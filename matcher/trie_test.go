@@ -109,15 +109,18 @@ func TestRabbitMQRemove(t *testing.T) {
 		{"#.b.#", "t26"},
 	}
 
+	var subs []*Subscription
+
 	for _, tt := range rabbitmqBinding {
 		// todo: save subscription
-		_, err := m.Add(tt.topic, tt.handler)
+		sub, err := m.Add(tt.topic, tt.handler)
 		assert.NoError(err)
+		subs = append(subs, sub)
 	}
 
 	rabbitmqBindingToRemove := []int{1, 5, 11, 19, 21}
 	for _, v := range rabbitmqBindingToRemove {
-		m.Remove() // remove subscription
+		m.Remove(subs[v-1])
 	}
 
 	matchings := []struct {
