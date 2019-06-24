@@ -4,6 +4,8 @@ import (
 	"errors"
 	"reflect"
 	"sync"
+
+	"github.com/nqd/mq/matcher"
 )
 
 // Err
@@ -23,42 +25,42 @@ type handlers []Handler
 // MQ is the structure that stores handler callback with interested topic
 type MQ struct {
 	sync.Mutex
-	emit map[string]handlers // topic - handler cb
+	matcher matcher.Matcher
 }
 
 // A Subscription represents interest in a given subject.
 type Subscription struct {
-	mq    *MQ
-	topic string
-	hdlr  Handler
+	mq        *MQ
+	operation *matcher.Operation
 }
 
 // NewMQ return new structure of MQ
 func NewMQ() *MQ {
-	emit := make(map[string]handlers)
+	matcher := matcher.NewTrieMatcher()
 	return &MQ{
-		emit: emit,
+		matcher: matcher,
 	}
 }
 
 // Publish publishes the data argument to the given subject. The data
 // argument is left untouched and needs to be correctly interpreted on
 // the receiver.
-func (m *MQ) Publish(topic string, data interface{}) (err error) {
+func (m *MQ) Publish(topic string, data interface{}) error {
 	m.Lock()
-	hs := m.emit[topic]
+	hdlrs := m.matcher.Lookup(topic)
 	m.Unlock()
 
-	if hs == nil {
-		return
+	if len(hdlrs) == 0 {
+		return nil
 	}
 
 	dataType := reflect.TypeOf(data)
 	dataValue := []reflect.Value{reflect.ValueOf(data)}
 
-	for _, h := range hs {
-		if h.argType == dataType {
-			go h.fn.Call(dataValue)
+	for _, h := range hdlrs {
+		hdlr := h.(Handler)
+		if hdlr.argType == dataType {
+			go hdlr.fn.Call(dataValue)
 		}
 	}
 
@@ -90,16 +92,15 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 	m.Lock()
 	defer m.Unlock()
 
-	if m.emit[topic] == nil {
-		m.emit[topic] = handlers{handler}
-	} else {
-		m.emit[topic] = append(m.emit[topic], handler)
+	opt, err := m.matcher.Add(topic, handler)
+
+	if err != nil {
+		return nil, err
 	}
 
 	sub := &Subscription{
-		mq:    m,
-		topic: topic,
-		hdlr:  handler,
+		mq:        m,
+		operation: opt,
 	}
 
 	return sub, nil
@@ -107,29 +108,12 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 
 // Unsubscribe will remove interest in the given subject.
 func (s *Subscription) Unsubscribe() error {
-	topic := s.topic
-	hdlr := s.hdlr
-
 	s.mq.Lock()
 	defer s.mq.Unlock()
 
-	hdlrs, ok := s.mq.emit[topic]
-
-	if !ok {
+	if err := s.mq.matcher.Remove(s.operation); err != nil {
 		return ErrBadUnsubscription
 	}
 
-	if len(hdlrs) == 1 {
-		delete(s.mq.emit, topic)
-		return nil
-	}
-
-	for i, v := range hdlrs {
-		if v == hdlr {
-			newHdlrs := append(hdlrs[:i], hdlrs[i+1:]...)
-			s.mq.emit[topic] = newHdlrs
-			break
-		}
-	}
 	return nil
 }

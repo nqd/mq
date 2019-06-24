@@ -4,6 +4,7 @@
 package matcher
 
 import (
+	"errors"
 	"strings"
 	"sync"
 )
@@ -77,7 +78,7 @@ func (t *trieMatcher) Remove(sub *Operation) error {
 		if !ok {
 			// Operation doesn't exist.
 			t.Unlock()
-			return nil
+			return errors.New("invalid unsubscription")
 		}
 		curr = child
 	}
