@@ -41,7 +41,7 @@ func NewTrieMatcher() Matcher {
 	}
 }
 
-func (t *trieMatcher) Add(topic string, hdl Handler) (*Subscription, error) {
+func (t *trieMatcher) Add(topic string, hdl Handler) (*Operation, error) {
 	t.Lock()
 	curr := t.root
 	for _, word := range strings.Split(topic, delimiter) {
@@ -66,16 +66,16 @@ func (t *trieMatcher) Add(topic string, hdl Handler) (*Subscription, error) {
 	curr.subs[hdl] = struct{}{}
 	t.Unlock()
 
-	return &Subscription{topic: topic, handler: hdl}, nil
+	return &Operation{topic: topic, handler: hdl}, nil
 }
 
-func (t *trieMatcher) Remove(sub *Subscription) error {
+func (t *trieMatcher) Remove(sub *Operation) error {
 	t.Lock()
 	curr := t.root
 	for _, word := range strings.Split(sub.topic, delimiter) {
 		child, ok := curr.children[word]
 		if !ok {
-			// Subscription doesn't exist.
+			// Operation doesn't exist.
 			t.Unlock()
 			return nil
 		}

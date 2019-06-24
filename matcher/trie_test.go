@@ -109,7 +109,7 @@ func TestRabbitMQRemove(t *testing.T) {
 		{"#.b.#", "t26"},
 	}
 
-	var subs []*Subscription
+	var subs []*Operation
 
 	for _, tt := range rabbitmqBinding {
 		// todo: save subscription
