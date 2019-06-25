@@ -1,6 +1,6 @@
 # MQ [![Build Status](https://secure.travis-ci.org/nqd/mq.png?branch=master)](http://travis-ci.org/nqd/mq)
 
-An Title Queue with callback for Golang
+A Golang message queue that does struct encoding and matches topics like  RabbitMQ.
 
 ## Installation
 
@@ -77,3 +77,11 @@ _, err := m.Subscribe("foo.bar.baz.#", func(s string) {
 
 err := m.Publish("foo.bar.baz", "hello my world")
 ```
+
+More concret example of RabbitMQ could be found at [RabbitMQ tutorial - Topics](https://www.rabbitmq.com/tutorials/tutorial-five-go.html). The topic matching github.com/nqd/mq/matcher implement trie topic routing, inherited much from [fast-topic-matching](https://github.com/tylertreat/fast-topic-matching).
+
+## See also
+
+- [fast-topic-matching](https://github.com/tylertreat/fast-topic-matching)
+- [qlobber](https://github.com/davedoesdev/qlobber)
+- Very fast and scalable topic routing [1](https://www.rabbitmq.com/blog/2010/09/14/very-fast-and-scalable-topic-routing-part-1/), [2](https://www.rabbitmq.com/blog/2011/03/28/very-fast-and-scalable-topic-routing-part-2/)
