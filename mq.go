@@ -20,8 +20,6 @@ type Handler struct {
 	argType reflect.Type  // type of the arg
 }
 
-type handlers []Handler
-
 // MQ is the structure that stores handler callback with interested topic
 type MQ struct {
 	sync.Mutex
