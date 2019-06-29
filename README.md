@@ -78,7 +78,7 @@ _, err := m.Subscribe("foo.bar.baz.#", func(s string) {
 err := m.Publish("foo.bar.baz", "hello my world")
 ```
 
-More concret example of RabbitMQ could be found at [RabbitMQ tutorial - Topics](https://www.rabbitmq.com/tutorials/tutorial-five-go.html). The topic matching github.com/nqd/mq/matcher implement trie topic routing, inherited much from [fast-topic-matching](https://github.com/tylertreat/fast-topic-matching).
+More concrete example of RabbitMQ could be found at [RabbitMQ tutorial - Topics](https://www.rabbitmq.com/tutorials/tutorial-five-go.html). The topic matching github.com/nqd/mq/matcher implement trie topic routing, inherited much from [fast-topic-matching](https://github.com/tylertreat/fast-topic-matching).
 
 ## See also
 
