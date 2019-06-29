@@ -14,13 +14,13 @@ var (
 	ErrBadUnsubscription = errors.New("invalid unsubscription")
 )
 
-// Handler is a specific callback used for Subscribe
-type Handler struct {
+// handler is a specific callback used for Subscribe
+type handler struct {
 	fn      reflect.Value // value of the cb
 	argType reflect.Type  // type of the arg
 }
 
-// MQ is the structure that stores handler callback with interested topic
+// MQ is the structure that stores hdlr callback with interested topic
 type MQ struct {
 	sync.Mutex
 	matcher matcher.Matcher
@@ -56,7 +56,7 @@ func (m *MQ) Publish(topic string, data interface{}) error {
 	dataValue := []reflect.Value{reflect.ValueOf(data)}
 
 	for _, h := range hdlrs {
-		hdlr := h.(Handler)
+		hdlr := h.(handler)
 		if hdlr.argType == dataType {
 			go hdlr.fn.Call(dataValue)
 		}
@@ -82,7 +82,7 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 	}
 	cbValue := reflect.ValueOf(cb)
 
-	handler := Handler{
+	hdlr := handler{
 		fn:      cbValue,
 		argType: cbType.In(0),
 	}
@@ -90,7 +90,7 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 	m.Lock()
 	defer m.Unlock()
 
-	opt, err := m.matcher.Add(topic, handler)
+	opt, err := m.matcher.Add(topic, hdlr)
 
 	if err != nil {
 		return nil, err
