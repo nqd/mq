@@ -37,6 +37,9 @@ err := m.Publish("bar", mtd)
 
 // Unsubscribe
 err := sub.Unsubscribe()
+
+// Close the MQ
+m.Close()
 ```
 
 ## Wildcard subscription
