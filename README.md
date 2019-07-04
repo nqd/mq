@@ -26,7 +26,6 @@ type todo struct {
 
 sub, err := m.Subscribe("bar", func(t *todo) {
     log.Printf("received a todo %+v\n", t)
-    done <- true
 })
 // ...
 mtd := &todo{
