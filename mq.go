@@ -12,6 +12,7 @@ import (
 var (
 	ErrBadSubscription   = errors.New("invalid subscription")
 	ErrBadUnsubscription = errors.New("invalid unsubscription")
+	ErrMQClosed          = errors.New("mq is closed")
 )
 
 // handler is a specific callback used for Subscribe
@@ -24,6 +25,7 @@ type handler struct {
 type MQ struct {
 	sync.Mutex
 	matcher matcher.Matcher
+	closed  bool
 }
 
 // A Subscription represents interest in a given subject.
@@ -37,6 +39,7 @@ func NewMQ() *MQ {
 	matcher := matcher.NewTrieMatcher()
 	return &MQ{
 		matcher: matcher,
+		closed:  false,
 	}
 }
 
@@ -45,6 +48,12 @@ func NewMQ() *MQ {
 // the receiver.
 func (m *MQ) Publish(topic string, data interface{}) error {
 	m.Lock()
+
+	if m.closed == true {
+		m.Unlock()
+		return ErrMQClosed
+	}
+
 	hdlrs := m.matcher.Lookup(topic)
 	m.Unlock()
 
@@ -69,6 +78,13 @@ func (m *MQ) Publish(topic string, data interface{}) error {
 // can have wildcards (partial:*, full:#). Messages will be delivered
 // to the associated cb.
 func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
+	m.Lock()
+	if m.closed == true {
+		m.Unlock()
+		return nil, ErrMQClosed
+	}
+	m.Unlock()
+
 	if cb == nil {
 		return nil, ErrBadSubscription
 	}
@@ -88,9 +104,8 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 	}
 
 	m.Lock()
-	defer m.Unlock()
-
 	opt, err := m.matcher.Add(topic, hdlr)
+	m.Unlock()
 
 	if err != nil {
 		return nil, err
@@ -102,6 +117,14 @@ func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 	}
 
 	return sub, nil
+}
+
+// Close the given queue.
+// After, all publishes will return error
+func (m *MQ) Close() {
+	m.Lock()
+	m.closed = true
+	m.Unlock()
 }
 
 // Unsubscribe will remove interest in the given subject.

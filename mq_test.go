@@ -144,6 +144,21 @@ func TestUnsubErr(t *testing.T) {
 	}
 }
 
+func TestClose(t *testing.T) {
+	m := NewMQ()
+
+	m.Close()
+
+	if err := m.Publish("topic", "hello"); err != ErrMQClosed {
+		t.Fatal("Publish after close MQ: ", err)
+	}
+
+	_, err := m.Subscribe("topic", func(subMsg string) {})
+	if err != ErrMQClosed {
+		t.Fatal("Subscribe after close MQ: ", err)
+	}
+}
+
 func Wait(ch chan bool) (err error) {
 	timeout := 1 * time.Second
 	select {
