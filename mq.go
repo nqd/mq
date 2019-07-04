@@ -49,7 +49,7 @@ func NewMQ() *MQ {
 func (m *MQ) Publish(topic string, data interface{}) error {
 	m.Lock()
 
-	if m.closed == true {
+	if m.closed {
 		m.Unlock()
 		return ErrMQClosed
 	}
@@ -79,7 +79,7 @@ func (m *MQ) Publish(topic string, data interface{}) error {
 // to the associated cb.
 func (m *MQ) Subscribe(topic string, cb interface{}) (*Subscription, error) {
 	m.Lock()
-	if m.closed == true {
+	if m.closed {
 		m.Unlock()
 		return nil, ErrMQClosed
 	}
