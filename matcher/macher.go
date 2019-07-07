@@ -7,6 +7,12 @@ const (
 	empty     = ""
 )
 
+type Option struct {
+	WildcardOne  string
+	WildcardSome string
+	Delimiter    string
+}
+
 // Handler is a value associated with a subscription.
 type Handler interface{}
 
@@ -26,4 +32,12 @@ type Matcher interface {
 
 	// Lookup returns the Subscribers for the given topic.
 	Lookup(topic string) []Handler
+}
+
+func GetDefaultOption() Option {
+	return Option{
+		WildcardOne:  wcOne,
+		WildcardSome: wcSome,
+		Delimiter:    delimiter,
+	}
 }
