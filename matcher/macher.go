@@ -1,12 +1,14 @@
 package matcher
 
 const (
-	delimiter = "."
-	wcOne     = "*"
-	wcSome    = "#"
-	empty     = ""
+	amqpDelimiter = "."
+	amqpWcOne     = "*"
+	amqpWcSome    = "#"
 )
 
+const empty = ""
+
+// Option define the wildcard options for topic matching
 type Option struct {
 	WildcardOne  string
 	WildcardSome string
@@ -34,10 +36,11 @@ type Matcher interface {
 	Lookup(topic string) []Handler
 }
 
+// GetDefaultOption returns defaulted AMQP wildcard matching option
 func GetDefaultOption() Option {
 	return Option{
-		WildcardOne:  wcOne,
-		WildcardSome: wcSome,
-		Delimiter:    delimiter,
+		WildcardOne:  amqpWcOne,
+		WildcardSome: amqpWcSome,
+		Delimiter:    amqpDelimiter,
 	}
 }
