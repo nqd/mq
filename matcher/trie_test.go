@@ -12,7 +12,7 @@ import (
 func TestRabbitMQLookup(t *testing.T) {
 	assert := assert.New(t)
 
-	m := NewTrieMatcher()
+	m := NewTrieMatcher(GetDefaultOption())
 
 	rabbitmqBinding := []struct {
 		topic   string
@@ -75,7 +75,7 @@ func TestRabbitMQLookup(t *testing.T) {
 func TestRabbitMQRemove(t *testing.T) {
 	assert := assert.New(t)
 
-	m := NewTrieMatcher()
+	m := NewTrieMatcher(GetDefaultOption())
 
 	rabbitmqBinding := []struct {
 		topic   string

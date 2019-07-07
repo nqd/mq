@@ -42,7 +42,7 @@ func TestSub(t *testing.T) {
 		t.Fatal("Failed to publish: ", err)
 	}
 
-	if err := Wait(done); err != nil {
+	if err := wait(done); err != nil {
 		t.Fatal("Did not get message")
 	}
 
@@ -68,7 +68,7 @@ func TestSub(t *testing.T) {
 		t.Fatal("Failed to publish: ", err)
 	}
 
-	if err := Wait(done); err != nil {
+	if err := wait(done); err != nil {
 		t.Fatal("Did not get message")
 	}
 
@@ -96,8 +96,8 @@ func TestSub(t *testing.T) {
 		t.Fatal("Failed to publish: ", err)
 	}
 
-	err1 := Wait(done1)
-	err2 := Wait(done2)
+	err1 := wait(done1)
+	err2 := wait(done2)
 	if err1 != nil || err2 != nil {
 		t.Fatal("Did not get message")
 	}
@@ -124,7 +124,7 @@ func TestUnsub(t *testing.T) {
 		t.Fatal("Failed to publish: ", err)
 	}
 
-	if err1 := Wait(done); err1 == nil {
+	if err1 := wait(done); err1 == nil {
 		t.Fatal("Unsubscribe actually does not remove subscribe")
 	}
 }
@@ -159,7 +159,7 @@ func TestClose(t *testing.T) {
 	}
 }
 
-func Wait(ch chan bool) (err error) {
+func wait(ch chan bool) (err error) {
 	timeout := 1 * time.Second
 	select {
 	case <-ch:

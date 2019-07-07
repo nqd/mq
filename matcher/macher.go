@@ -1,11 +1,19 @@
 package matcher
 
 const (
-	delimiter = "."
-	wcOne     = "*"
-	wcSome    = "#"
-	empty     = ""
+	amqpDelimiter = "."
+	amqpWcOne     = "*"
+	amqpWcSome    = "#"
 )
+
+const empty = ""
+
+// Option define the wildcard options for topic matching
+type Option struct {
+	WildcardOne  string
+	WildcardSome string
+	Delimiter    string
+}
 
 // Handler is a value associated with a subscription.
 type Handler interface{}
@@ -26,4 +34,13 @@ type Matcher interface {
 
 	// Lookup returns the Subscribers for the given topic.
 	Lookup(topic string) []Handler
+}
+
+// GetDefaultOption returns defaulted AMQP wildcard matching option
+func GetDefaultOption() Option {
+	return Option{
+		WildcardOne:  amqpWcOne,
+		WildcardSome: amqpWcSome,
+		Delimiter:    amqpDelimiter,
+	}
 }

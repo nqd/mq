@@ -36,7 +36,7 @@ type Subscription struct {
 
 // NewMQ return new structure of MQ
 func NewMQ() *MQ {
-	matcher := matcher.NewTrieMatcher()
+	matcher := matcher.NewTrieMatcher(matcher.GetDefaultOption())
 	return &MQ{
 		matcher: matcher,
 		closed:  false,
