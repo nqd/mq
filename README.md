@@ -82,6 +82,22 @@ err := m.Publish("foo.bar.baz", "hello my world")
 
 More concrete example of RabbitMQ could be found at [RabbitMQ tutorial - Topics](https://www.rabbitmq.com/tutorials/tutorial-five-go.html). The topic matching github.com/nqd/mq/matcher implement trie topic routing, inherited much from [fast-topic-matching](https://github.com/tylertreat/fast-topic-matching).
 
+## Benchmark
+
+This is the result running in an Ubuntu 16.04 64bit, i7-5600U CPU @ 2.60GHz × 4.
+
+Subscribe all 1000 topics:
+
+```{bash}
+BenchmarkMQSubscribe-4              2000            693580 ns/op          144124 B/op       4001 allocs/op
+```
+
+Publish all 100000 messages to a MQ with 1000 subscribers
+
+```{bash}
+BenchmarkMQPublish-4                   3         453835682 ns/op        104704792 B/op   1442775 allocs/op
+```
+
 ## See also
 
 - [fast-topic-matching](https://github.com/tylertreat/fast-topic-matching)
