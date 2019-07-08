@@ -36,7 +36,7 @@ func init() {
 	}
 }
 
-func BenchmarkMQPopulate(b *testing.B) {
+func BenchmarkMQSubscribe(b *testing.B) {
 	m := NewMQ()
 
 	b.ReportAllocs()
@@ -52,7 +52,7 @@ func BenchmarkMQPopulate(b *testing.B) {
 	}
 }
 
-func BenchmarkMQThroughput(b *testing.B) {
+func BenchmarkMQPublish(b *testing.B) {
 	m := NewMQ()
 
 	for _, sub := range subs {
